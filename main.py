@@ -46,7 +46,7 @@ def getreankMixen(args):
     for line in args[0]["auto"]:
         print("%sml %s wird eingefüllt!" %(args[0]["auto"][line], line))
         '''
-        Hier muss die Pumpe angesteuert werden!s
+        Hier muss die Pumpe angesteuert werden!
         '''
 
         # An das Flowmeter muss die Getränkemenge übergeben werden!
