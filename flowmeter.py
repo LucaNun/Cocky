@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 
 class Flowmeter():
-    def __init__():
+    def __init__(pin, ml):
         self.pin = pin
         self.ml = ml
         self.imp = 0
