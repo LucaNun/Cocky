@@ -1,4 +1,4 @@
-import flask, asyncio, time, getraenk
+import flask, asyncio, time, getraenk, threading, random
 from multiprocessing import Process
 from flask import Flask
 
@@ -43,21 +43,30 @@ def getreankMixen(args):
     Es wird eine For Schleife erstellt welche dann
     die benötigten Getränke abarbeitet
     '''
+    l = []
     for line in args[0]["auto"]:
-        print("%sml %s wird eingefüllt!" %(args[0]["auto"][line], line))
-        '''
-        Hier muss die Pumpe angesteuert werden!
-        '''
+        t = threading.Thread(target=pumpe, args=(args, line))
+        t.start()
+        l.append(t)
 
-        # An das Flowmeter muss die Getränkemenge übergeben werden!
-        a = asyncio.run(flowmeter(2))
-
-        '''
-        Hier muss die Pumpe wieder gestoppt werde!
-        '''
-        print("%s ist fertig eingefüllt!" %line)
+    #Wartet bis jeder Thread fertig durch gelaufen ist
+    for i in l:
+        while i.is_alive():
+            i.join()
+            time.sleep(0.1)
     print("%s ist fertig!" %args[0]["name"])
 
+def pumpe(args, line):
+    print("%sml %s wird eingefüllt!" %(args[0]["auto"][line], line))
+    '''
+    Hier muss die Pumpe angesteuert werden!
+    '''
+    # An das Flowmeter muss die Getränkemenge übergeben werden!
+    a = asyncio.run(flowmeter(random.randrange(1,5)))
+    '''
+    Hier muss die Pumpe wieder gestoppt werde!
+    '''
+    print("%s ist fertig eingefüllt!" %line)
 
 async def flowmeter(value):
     await asyncio.sleep(value)
