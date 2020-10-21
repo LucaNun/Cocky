@@ -1,39 +1,43 @@
 import json
 
-class Misschung(object):
+class Misschung():
     def __init__(self):
         with open("misschungen.json") as f:
-            self.liste = json.load(f)
+            self.misschungen = json.load(f)
+        with open("pumpen.json") as f:
+            self.pumpen = json.load(f)
 
         with open("misschungen.json", "w") as f:
-            #s = {"Getreank1":["Hier", "steht", "was"]}
-            f.write(json.dumps(self.liste, indent = 2, sort_keys=True))
-    def check(self, name, data):
-        ## TODO: DATA muss noch übergeben werden
-        # Überlegung ob die Classe in der Main.py importiert wird und das von
-        # Hier die pumpen angesteuert werden?!
+            f.write(json.dumps(self.misschungen, indent = 2, sort_keys=True))
+        with open("pumpen.json", "w") as f:
+            f.write(json.dumps(self.pumpen, indent = 2, sort_keys=False))
 
-        # Checkt ob alle getraenke vorhanden sind um den drink zu misschen!
-        for i in self.liste:
-            if i == name:
-                for g in self.liste[i][0]["auto"]:
-                    if not g in data:
-                        return False
-                return True
-            else:
-                return False
+    def check(self, name):
+        if name in self.misschungen:
+            # TODO: speicher self.misschungen[name] die getränke in x um
+            # die daten mit den pumpen.values abzugleichen und es als
+            # return mit pin und sorte zu übergeben
 
-class Getraenke():
-    def __init__(self):
-        with open("getraenke.json") as f:
-            self.liste = json.load(f)
+            a = list(self.pumpen.values())
+            x = []
+            for i in range(len(a)):
+                x.append(a[i]["Sorte"])
+            # Checkt ob alle Getraenke vorhanden sind um den drink zu misschen
+            for g in self.misschungen[name][0]["auto"]:
+                if not g in x:
+                    return False
+            return x
+        return "Misschung nicht vorhanden"
 
-        with open("getraenke.json", "w") as f:
-            #s = {"Getreank1":["Hier", "steht", "was"]}
-            f.write(json.dumps(self.liste, indent = 2, sort_keys=False))
+    def get_pin(self):
+        # Pin und Sorte übergeben?!
+
+        pass
+
+    def pumpen(self, pin):
+        pass
 
 if __name__ == "__main__":
-    g = Getraenke()
     e = Misschung()
     # e.check muss auf g.liste angepasst werden
-    print(e.check("Gin Tonic", g.liste))
+    print(e.check("Gin Tonic"))
