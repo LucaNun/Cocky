@@ -4,14 +4,14 @@ import time
 class Flowmeter():
     def __init__(pin, ml):
         self.pin = pin
-        self.ml = ml
+        self.ml = global ml
         self.imp = 0
         self.menge = 0
 
     def addsome(self, pinnumber):
         self.imp += 1
 
-    def messen(self, menge_needed):
+    def messen(self):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setwarnings(False)
         GPIO.setup(self.pin, GPIO.IN)
@@ -24,14 +24,5 @@ class Flowmeter():
             self.menge = (self.imp / 73) * self.dauer
             time.sleep(0.01)
             self.imp += 1
-            if self.menge >= menge_needed:
+            if self.menge >= self.ml:
                 break
-
-
-        '''
-        HIER MUSS DER CODE ZUR BESTIMMUNG DER MENGE REIN
-        VLLT AUCH HÖHER
-        IMP / 73
-        ERGEBNIS * DAUER
-        = MENGE
-        '''
