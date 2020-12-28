@@ -15,8 +15,6 @@ from flask import Flask
 app = Flask(__name__)
 @app.route("/", methods=['GET'])
 def testroute():
-    M = getraenk.Mischungen()
-    g = getraenk.Mischung("Moscow Mule", M)
     is_process_existing = "getreankMixen_P" in globals()
     if is_process_existing:
         global getreankMixen_P
@@ -27,8 +25,11 @@ def testroute():
             del getreankMixen_P
             return "gelöscht"
     else:
+        M = getraenk.Mischungen()
+        global mischung
+        mischung = getraenk.Mischung("Moscow Mule", M)
         # Startet Asyncrone Funktion
-        g.check(M)
+        mischung.check()
         getreankMixen_P = Process(
             target=g.getreankMixen,
             args=(),
@@ -36,6 +37,15 @@ def testroute():
         )
         getreankMixen_P.start()
         return "gestartet"
+
+@app.route("/name", methods=['GET'])
+def getname():
+    global mischung
+    try:
+        return mischung.name
+
+    except NameError:
+        return "Lost"
 
 
 if __name__ == "__main__":

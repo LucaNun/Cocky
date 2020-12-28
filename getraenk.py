@@ -1,4 +1,4 @@
-import json, threading, time, asyncio, random
+import json, threading, time, asyncio, random#, flowmeter
 class Mischungen():
     def __init__(self):
         '''
@@ -24,18 +24,18 @@ class Mischung():
         self.name = name
         self.Mischungen = M
 
-    def check(self, Mischungen):
+    def check(self):
         if self.name in self.Mischungen.liste:
-            a = list(Mischungen.pumpen.values())
+            a = list(self.Mischungen.pumpen.values())
             x = []
             for i in range(len(a)):
                 x.append(a[i]["Sorte"])
             # Checkt ob alle Getraenke vorhanden sind um den drink zu misschen
-            for g in Mischungen.liste[self.name][0]["auto"]:
+            for g in self.Mischungen.liste[self.name][0]["auto"]:
                 if not g in x:
-                    return False
+                    return "Nicht alle Zutaten sind vorhanden!"
             return x
-        return "Misschung nicht vorhanden"
+        return "Misschung nicht vorhanden!"
 
     def getreankMixen(self):
         '''

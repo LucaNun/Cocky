@@ -4,7 +4,7 @@ import time
 class Flowmeter():
     def __init__(pin, ml):
         self.pin = pin
-        self.ml = global ml
+        self.ml = ml
         self.imp = 0
         self.menge = 0
 

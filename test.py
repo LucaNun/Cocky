@@ -17,6 +17,8 @@ def testroute():
         z = 0
     z+= random.randint(1, 10)
     return str(z)
-
+@app.route("/werte", methods=["GET"])
+def getwerte():
+    return str(["Hier", "und", "da"])
 if __name__ == "__main__":
     app.run('localhost', '3334', debug=True)
