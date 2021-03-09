@@ -140,6 +140,7 @@ def makedrink(id):
 @app.route("/cleaning", methods=['GET'])
 def cleaning():
     if not inited_pumps:
+        print("Initalisieren")
         init_pumps()
 
     #Hollt die Pumpennummer sowie die Pinnummer aus der Datenbank
@@ -159,8 +160,10 @@ def cleaning():
 @app.route("/cleaning/<int:pin>", methods=['GET'])
 def cleaning_pump(pin):
     if GPIO.input(pin):
+        print("Anschalten: " + str(pin))
         GPIO.output(pin, GPIO.LOW)
     else:
+        print("Ausschalten: " + str(pin))
         GPIO.output(pin, GPIO.HIGH)
     return ""
 
@@ -187,6 +190,30 @@ def ready(id):
                 answer.append("<h2>%s: %s</h2>" %(result[0][2], inhalt[2]))
     return "".join(answer)
 
+@app.route("/newdrink", methods=['GET', 'POST'])
+def newdrink():
+    if request.method == 'GET':
+        return render_template("newdrink.html")
+    if request.method == 'POST':
+        data = [request.form["Name"], request.form["Beschreibung"], request.form["Alkoholcheck"], request.form["Einfüllung"]]
+        print("data: "+ str(data))
+
+        if data[2] == "Alkoholfrei":
+            data[2] = 0
+        else:
+            data[2] = 1
+
+        if data[3] == "Automatisch":
+            data[3] = 1
+        else:
+            data[3] = 0
+        #!!!!!!!! Bei Bezeichnung fehlt das n Bezeichung
+        sql = "INSERT INTO inhalte (`Inhalts.ID`, `Pumpen.ID`, `Bezeichung`, `Beschreibung`, `Alkohol`, `Manuell`) VALUES (%s, %s, %s, %s, %s, %s)"
+        val = (None, None, data[0], data[1], data[2], data[3])
+        db.mycursor.execute(sql, val)
+        db.mydb.commit()
+        return redirect("/")
+
 @app.route("/test", methods=['GET', 'POST'])
 def test():
     cocktail = test()
@@ -205,6 +232,8 @@ def init_pumps():
     #Initalisiert alle Pumpen zum ersten mal
     for i in range(0, len(result)):
         Relais(result[i][1])
+    #Holt sich die Globale Variable inited_pumps und setzt diese auf True
+    global inited_pumps
     inited_pumps = True
 
 if __name__ == "__main__":
