@@ -12,27 +12,11 @@
 <body>
 
   <div class="container mt-4">
-    <form action="/newmixdrink" method="POST">
-        <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu" data-bs-toggle="dropdown" aria-expanded="false">
-              Getränk wählen
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenu">
-                {% for i in liste %}
-                    <li><input class="dropdown-item" type="button" name ="{{i[0]}}" value ="{{i[1]}}"></li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="mt-4" id="drinklist">
-            <div class="mb-3">
-                <label for="Mixdrink" class="form-label">Getränkename</label>
-                <input class="form-control" type="text" placeholder="Hier der Name des Mixgetränkes" aria-label="name" name="Mixdrink" required>
-            </div>
-            <div class="mb-3">
-                <label for="Beschreibung" class="form-label">Beschreibung:</label>
-                <textarea class="form-control" name="Beschreibung" rows="3" placeholder="Hier eine kurze Beschreibung des Getränkes" required></textarea>
-            </div>
-
+    <form action="/setbottlesize" method="POST">
+        <h1>Geben sie ihre Glasgröße an</h1>
+        <div class="mb-3">
+          <label for="value" class="form-label">Name</label>
+          <input class="form-control" type="number" placeholder="Hier die Menge in ml" aria-label="name" name="value">
         </div>
 
         <div class="mt-4">

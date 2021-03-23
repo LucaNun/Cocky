@@ -24,31 +24,6 @@ class Datenbank():
           database=self.database_name)
 
 
-    def _Create_database(self, database_name):
-        self.mydb = mysql.connector.connect(
-            host=self.host,
-            user=self.user,
-            passwd=self.pw)
-
-        self.mycursor = self.mydb.cursor()
-        sql = "Create DATABASE `%s`" %database_name
-        self.mycursor.execute(sql)
-        print("Database %s created!" %database_name)
-
-    def _Create_tabel(self, name, sql):
-        self.mycursor.execute(sql)
-        print("Tabel %s created!" %name)
-
-
-    def _Regestration_user(self, data):
-        sql = "INSERT INTO user (ID, Secondname, Firstname, EMail, Password, Username, Nummber) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        val = ("NULL", data[0], data[1], data[2], data[3], data[4], data[5])
-        self.mycursor.execute(sql, val)
-        self.mydb.commit()
-
-    def _get_Mischung(self, name):
-        pass
-
     def _get_MischungsInhalte(self, mischungsID):
         sql = "SELECT `Inhalts.ID`, `Menge` FROM `mischungen&inhalte` WHERE `Mischungs.ID` LIKE %s" %mischungsID
         self.mycursor.execute(sql)

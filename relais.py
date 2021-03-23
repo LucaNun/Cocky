@@ -1,28 +1,15 @@
 import RPi.GPIO as GPIO
 import time
-'''
-GPIO.setmode(GPIO.BOARD)
-GPIO.setwarnings(False)
-GPIO.setup(11, GPIO.OUT)
 
-status = True
-while True:
-    if status:
-        GPIO.output(11, GPIO.LOW)
-        status = False
-        time.sleep(7)
-    else:
-        GPIO.output(11, GPIO.HIGH)
-        status = True
-        time.sleep(2)
-'''
+
 class Relais():
     #Initalisiert das Relais, Pin sowie der Modus wird gesetzt
     def __init__(self, pin):
         self.pin = pin
         #Vergibt die Pinnummern nach der GPIO-Pin Bezeichnung
         GPIO.setmode(GPIO.BCM)
-        #? GPIO.setwarnings(False)
+        GPIO.setwarnings(False)
+        #Setzt den GPIO-Pin auf Output
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, GPIO.HIGH)
 

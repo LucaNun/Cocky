@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 09. Mrz 2021 um 11:59
+-- Erstellungszeit: 10. Mrz 2021 um 12:38
 -- Server-Version: 10.4.17-MariaDB
 -- PHP-Version: 8.0.1
 
@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `inhalte` (
   `Inhalts.ID` int(11) NOT NULL,
   `Pumpen.ID` int(11) DEFAULT NULL,
-  `Bezeichung` tinytext NOT NULL,
+  `Bezeichnung` tinytext NOT NULL,
   `Beschreibung` text NOT NULL,
   `Alkohol` tinyint(1) NOT NULL,
   `Manuell` tinyint(1) NOT NULL
@@ -40,7 +40,7 @@ CREATE TABLE `inhalte` (
 -- Daten für Tabelle `inhalte`
 --
 
-INSERT INTO `inhalte` (`Inhalts.ID`, `Pumpen.ID`, `Bezeichung`, `Beschreibung`, `Alkohol`, `Manuell`) VALUES
+INSERT INTO `inhalte` (`Inhalts.ID`, `Pumpen.ID`, `Bezeichnung`, `Beschreibung`, `Alkohol`, `Manuell`) VALUES
 (1, 1, 'Gin', 'halt Gin', 1, 0),
 (2, NULL, 'Eiswürfel', 'gefrorenes Wasser', 0, 1),
 (3, NULL, 'Limettenscheibe', 'ist sauer', 0, 1),
@@ -58,7 +58,7 @@ INSERT INTO `inhalte` (`Inhalts.ID`, `Pumpen.ID`, `Bezeichung`, `Beschreibung`, 
 
 CREATE TABLE `mischungen` (
   `Mischungs.ID` int(11) NOT NULL,
-  `Bezeichung` tinytext NOT NULL,
+  `Bezeichnung` tinytext NOT NULL,
   `Beschreibung` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -66,7 +66,7 @@ CREATE TABLE `mischungen` (
 -- Daten für Tabelle `mischungen`
 --
 
-INSERT INTO `mischungen` (`Mischungs.ID`, `Bezeichung`, `Beschreibung`) VALUES
+INSERT INTO `mischungen` (`Mischungs.ID`, `Bezeichnung`, `Beschreibung`) VALUES
 (1, 'Gin Tonic', 'Halt Gin Tonic'),
 (2, 'Moscow Mule', '...........');
 
