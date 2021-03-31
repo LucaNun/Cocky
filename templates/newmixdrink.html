@@ -53,7 +53,7 @@
       var name= this.value;
       var value= this.name;
       console.log(value, name);
-      $("#drinklist").append('<div class="mb-3"><label for="'+ value +'" class="form-label">'+ name +'</label><input class="form-control" type="number" min="0" max="100" placeholder="Hier die Menge in %" aria-label="name" name="'+ value +'"></div>');
+      $("#drinklist").append('<div class="mb-3"><label for="'+ value +'" class="form-label">'+ name +'</label><input class="form-control" type="number" min="0" max="100" placeholder="Hier die Menge in %" aria-label="name" name="'+ value +'" required></div>');
       });
 
   </script>

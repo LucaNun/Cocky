@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 10. Mrz 2021 um 12:38
+-- Erstellungszeit: 27. Mrz 2021 um 12:19
 -- Server-Version: 10.4.17-MariaDB
 -- PHP-Version: 8.0.1
 
@@ -88,12 +88,12 @@ CREATE TABLE `mischungen&inhalte` (
 
 INSERT INTO `mischungen&inhalte` (`Mischungs.ID`, `Inhalts.ID`, `Menge`) VALUES
 (1, 1, 40),
-(1, 5, 127),
+(1, 5, 70),
 (2, 6, 16),
 (2, 7, 10),
 (2, 2, 0),
 (2, 4, 2),
-(2, 8, 80);
+(2, 8, 70);
 
 -- --------------------------------------------------------
 
@@ -111,16 +111,16 @@ CREATE TABLE `pumpen` (
 --
 
 INSERT INTO `pumpen` (`Pumpen.ID`, `PIN`) VALUES
-(1, 13),
-(2, 19),
+(1, 24),
+(2, 21),
 (3, 26),
-(4, 21),
-(5, 20),
-(6, 16),
-(7, 12),
-(8, 1),
-(9, 24),
-(10, 23);
+(4, 19),
+(5, 13),
+(6, 23),
+(7, 25),
+(8, 12),
+(9, 16),
+(10, 20);
 
 --
 -- Indizes der exportierten Tabellen

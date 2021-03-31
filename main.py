@@ -65,19 +65,17 @@ def main():
     return render_template("main.html")
 
 @app.route("/getdrinks", methods=['GET', 'POST'])
-def getdrinks():
+def get_drinks():
     #Wenn die Pumpen noch nicht Initalisiert sind führe init_pumps() aus
     if not inited_pumps:
         init_pumps()
 
-    sql = "SELECT * FROM `mischungen`"
-    db.mycursor.execute(sql)
-    result = db.mycursor.fetchall()
+    result = db._get_mixdrinks()
 
     return render_template("getdrinks.html", result=result, len=len(result))
 
 @app.route("/getdrink/<id>", methods=['GET', 'POST'])
-def getdrink(id):
+def get_drink(id):
     if not inited_pumps:
         init_pumps()
 
@@ -124,7 +122,7 @@ def getdrink(id):
         return "".join(answer)
 
 @app.route("/makedrink/<id>", methods=['GET', 'POST'])
-def makedrink(id):
+def make_drink(id):
     if not inited_pumps:
         init_pumps()
 
@@ -156,15 +154,15 @@ def ready(id):
                 answer.append("<h2>%s: Rest auffüllen</h2>" %result[0][2])
             else:
                 answer.append("<h2>%s: %s</h2>" %(result[0][2], inhalt[2]))
+    answer.append('<a href="/" class="btn btn-primary mt-4">Zurück..</a>')
     return "".join(answer)
 
 @app.route("/newdrink", methods=['GET', 'POST'])
-def newdrink():
+def new_drink():
     if request.method == 'GET':
         return render_template("newdrink.html")
     if request.method == 'POST':
         data = [request.form["Name"], request.form["Beschreibung"], request.form["Alkoholcheck"], request.form["Einfüllung"]]
-        print("data: "+ str(data))
 
         if data[2] == "Alkoholfrei":
             data[2] = 0
@@ -183,7 +181,7 @@ def newdrink():
         return redirect("/")
 
 @app.route('/newmixdrink', methods=['GET', 'POST'])
-def newmixdrink():
+def new_mixdrink():
     if request.method == 'GET':
         sql = "SELECT `Inhalts.ID`, `Bezeichnung` FROM `inhalte`"
         db.mycursor.execute(sql)
@@ -193,7 +191,6 @@ def newmixdrink():
 
     if request.method == 'POST':
         data = request.form
-        print("data: "+ str(data))
         name = ""
         beschreibung = ""
 
@@ -218,7 +215,6 @@ def newmixdrink():
 
             sql = "INSERT INTO `mischungen&inhalte` (`Mischungs.ID`, `Inhalts.ID`, `Menge`) VALUES (%s, %s, %s)"
             val = (result[0][0], int(i[0]), int(i[1]))
-            print("val: " + str(val))
             db.mycursor.execute(sql, val)
             db.mydb.commit()
 
@@ -227,7 +223,6 @@ def newmixdrink():
 @app.route("/cleaning", methods=['GET'])
 def cleaning():
     if not inited_pumps:
-        print("Initalisieren")
         init_pumps()
 
     #Hollt die Pumpennummer sowie die Pinnummer aus der Datenbank
@@ -247,23 +242,46 @@ def cleaning():
 @app.route("/cleaning/<int:pin>", methods=['GET'])
 def cleaning_pump(pin):
     if GPIO.input(pin):
-        print("Anschalten: " + str(pin))
         GPIO.output(pin, GPIO.LOW)
     else:
-        print("Ausschalten: " + str(pin))
         GPIO.output(pin, GPIO.HIGH)
     return ""
 
 @app.route("/setbottlesize", methods=['GET', 'POST'])
-def setbottlesize():
+def set_bottlesize():
     if request.method == 'GET':
         return render_template('setbottlesize.html')
     if request.method == 'POST':
         value = request.form['value']
         global bottlesize
-        bottlesize = value
+        bottlesize = int(value)
 
         return redirect("/")
+
+@app.route("/changepump", methods=['GET'])
+def change_pump():
+    sql = "SELECT * FROM `pumpen`"
+    db.mycursor.execute(sql)
+    pumps = db.mycursor.fetchall()
+
+    sql = "SELECT `Inhalts.ID`, `Pumpen.ID`, `Bezeichnung` FROM `inhalte` WHERE `Manuell` = 0 ORDER BY `Pumpen.ID`"
+    db.mycursor.execute(sql)
+    drinks = db.mycursor.fetchall()
+
+    return render_template("pumpchange.html", pumps = pumps, drinks = drinks)
+
+@app.route("/changepump/<int:pump>/<int:drink>", methods=['GET'])
+def change_pump_id(pump, drink):
+    # Um doppelte Belegung eines Getränkes zu verhindert
+    sql = "UPDATE `inhalte` SET `Pumpen.ID` = NULL WHERE `Pumpen.ID` = %s"%pump
+    db.mycursor.execute(sql)
+    db.mydb.commit()
+
+    sql = "UPDATE `inhalte` SET `Pumpen.ID` = %s WHERE `Inhalts.ID` = %s"%(pump, drink)
+    db.mycursor.execute(sql)
+    db.mydb.commit()
+
+    return ""
 
 def init_pumps():
     #Hollt die Pumpennummer sowie die Pinnummer aus der Datenbank

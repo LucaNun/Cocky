@@ -11,22 +11,36 @@
 
 <body>
 <div class="container mt-4">
-  <h1>Jetzt reinigen!</h1>
-  {%for i in result%}
-    {%if i[2]%}
-      <div class="row">
-        <div class="col"><h2>Pumpe {{i[0]}}:</h2></div>
-        <div class="col"><button type="button" class="btn btn-success" value="{{i[1]}}" disabled>Einschalten</button></div>
-        <div class="col"><button type="button" class="btn btn-danger" value="{{i[1]}}">Auschalten</button></div>
+  <h1>Ein neues Getränk zuweisen!</h1>
+  {%for pump in pumps%}
+    <div class="row">
+      <div class="col"><h2>Pumpe {{pump[0]}}:
+        {%set ns = namespace()%}
+        {%set ns.checked = False%}
+        {%for drink in drinks%}
+          {%if pump[0] == drink[1]%}
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu" data-bs-toggle="dropdown" aria-expanded="false">
+              {{drink[2]}} 
+            </button>
+            {%set ns.checked = True%}  
+          {%endif%}
+          
+        {%endfor%}
+        {%if not ns.checked%}
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu" data-bs-toggle="dropdown" aria-expanded="false">
+            Wählen Sie etwas...
+          </button>
+        {%endif%}
+
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu">
+          {%for drink in drinks%}
+            <li><button type="button" class="dropdown-item" value="{{pump[0]}}/{{drink[0]}}">{{drink[2]}}</button></li>
+          {%endfor%}
+        </ul>
+        </h2>
       </div>
-    {% else %}
-      <div class="row">
-        <div class="col"><h2>Pumpe {{i[0]}}:</h2></div>
-        <div class="col"><button type="button" class="btn btn-success" value="{{i[1]}}">Einschalten</button></div>
-        <div class="col"><button type="button" class="btn btn-danger" value="{{i[1]}}" disabled>Auschalten</button></div>
-      </div>
-    {% endif %}
-  {% endfor%}
+    </div>
+  {%endfor%}
   <a href="/" class="btn btn-primary mt-4">Zurück..</a>
 </div>
 
@@ -35,8 +49,8 @@
   <script type="text/javascript" src="/static/js/index.js"></script>
 
   <script>
-    $("button").click(function(){
-      var requestet_url = "/cleaning/" + this.value;
+    $(".dropdown-item").click(function(){
+      var requestet_url = "/changepump/" + this.value;
       console.log(requestet_url);
       $.ajax({url: requestet_url});
       setTimeout(function(){location.reload(true)},250);

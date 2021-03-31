@@ -10,11 +10,8 @@ class Datenbank():
         self.pw = pw
         self.database_name = database_name
 
-        try:
-            self._Create_database("cocktail")
-        except:
-            self.mydb = self._Connect()
-            self.mycursor = self.mydb.cursor()
+        self.mydb = self._Connect()
+        self.mycursor = self.mydb.cursor()
 
     def _Connect(self):
         return mysql.connector.connect(
@@ -22,8 +19,18 @@ class Datenbank():
           user=self.user,
           passwd=self.pw,
           database=self.database_name)
-
-
+######!!!!!#####
+    def _get_mixdrinks(self):
+        sql = "SELECT * FROM `mischungen`"
+        self.mycursor.execute(sql)
+        return self.mycursor.fetchall()
+    def _get_mixdrink(self, id):
+        sql = "SELECT * FROM `mischungen` WHERE `Mischungs.ID` = '%s'"%id
+        db.mycursor.execute(sql)
+        return db.mycursor.fetchall()
+    def _get_drink(self):
+        pass
+#####!!!!!######
     def _get_MischungsInhalte(self, mischungsID):
         sql = "SELECT `Inhalts.ID`, `Menge` FROM `mischungen&inhalte` WHERE `Mischungs.ID` LIKE %s" %mischungsID
         self.mycursor.execute(sql)
