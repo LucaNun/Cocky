@@ -1,6 +1,4 @@
 import RPi.GPIO as GPIO
-import time
-
 
 class Relais():
     def __init__(self, pin):

@@ -1,23 +1,16 @@
-#import flask, asyncio, time, getraenk, threading, random, database, steuerung
-#from multiprocessing import Process
-import flask, database, steuerung
+import flask, database, steuerung, values
 import RPi.GPIO as GPIO
 from relais import Relais
 from flask import Flask, request, redirect, url_for, render_template
+from threading import Thread
 
 
-
-#-Display
-#--Aktueller Zustand
 
 
 #!!!!!!!!!!!!
-#?! Die wagge muss auf die prozentzahlen eingestellt werden
 # Etwas auslagern in die Classe Datenbank?
-# Pumpe neu zuweisen
-# -Wenn Pumpe neu zugewiesen würd davor bei allen Inhalten die gleiche Pumpen ID entfernen
-# 3D Druck Wagge
-#
+#-Display
+#--Aktueller Zustand
 #!!!!!!!!!!!!
 
 db = database.Datenbank(host="localhost", user="root", pw="root", database_name="cocktail")
@@ -27,46 +20,23 @@ app = Flask(__name__)
 
 inited_pumps = False
 bottlesize = 250
+current_drink = []
 
-'''
-@app.route("/", methods=['GET'])
-def testroute():
-    is_process_existing = "getreankMixen_P" in globals()
-    if is_process_existing:
-        global getreankMixen_P
-        is_process_running = getreankMixen_P.is_alive()
-        if is_process_running:
-            return "run"
-        else:
-            del getreankMixen_P
-            return "gelöscht"
-    else:
-        M = getraenk.Mischungen()
-        global mischung
-        mischung = getraenk.Mischung("Moscow Mule", M)
-        # Startet Asyncrone Funktion
-        mischung.check()
-        getreankMixen_P = Process(
-            target=mischung.getreankMixen,
-            args=(),
-            daemon=True
-        )
-        getreankMixen_P.start()
-        return "gestartet"
+@app.route("/current", methods=['GET'])
+def current():
+    return str(values.current_drink)
 
-'''
 @app.route("/", methods=['GET'])
 def main():
     #Wenn die Pumpen noch nicht Initalisiert sind führe init_pumps() aus
     if not inited_pumps:
         init_pumps()
 
-    #Gibt die Startseite aus.
+    #Rendert ein HTML Template
     return render_template("main.html")
 
 @app.route("/getdrinks", methods=['GET', 'POST'])
 def get_drinks():
-    #Wenn die Pumpen noch nicht Initalisiert sind führe init_pumps() aus
     if not inited_pumps:
         init_pumps()
 
@@ -82,24 +52,16 @@ def get_drink(id):
     if request.method == 'GET':
         answer = []
         achtung = False
-
-        sql = "SELECT * FROM `mischungen` WHERE `Mischungs.ID` = '%s'"%id
-        db.mycursor.execute(sql)
-        mische = db.mycursor.fetchall()
+        mische = db._get_mixdrink(id)
         answer.append("Name: " + str(mische[0][1]) + "<br>Beschreibung:" + str(mische[0][2]) +"<br>")
 
-        sql = "SELECT * FROM `mischungen&inhalte` WHERE `mischungs.id` = '%s'"%mische[0][0]
-        db.mycursor.execute(sql)
-        belegung = db.mycursor.fetchall()
+        belegung = db._get_MischungsInhalte(mische[0][0])
         #0 = Misch.ID, 1 = Inhalts.ID, 2 = Menge
-        #Checke hier ob alle inhalte verfügbar sind
-        #wenn nein dann machte es kenntlich auf der seite
+        #Checke hier ob alle inhalte verfügbar sind wenn
+        #nicht dann wird es kenntlich gemacht auf der seite
         inhalte = []
         for i in range(0,len(belegung)):
-            sql = "SELECT `pumpen.id`, `manuell`, `Bezeichnung`, `Beschreibung` FROM `inhalte` WHERE `inhalts.id` = '%s'"%belegung[i][1]
-            db.mycursor.execute(sql)
-            result = db.mycursor.fetchall()
-
+            result = db._get_inhalte(belegung[i][0])
             if result[0][0] == None and result[0][1] == 0:
                 inhalte.append((result[0][2], result[0][3], True))
             else:
@@ -128,8 +90,10 @@ def make_drink(id):
 
     if request.method == 'GET':
         global bottlesize
-        steuerung.pumpen(db, id, bottlesize)
-        #-Asyncron Starten
+        #Startet es Asyncron als Thread damit nicht mehrmals auf Mischen gedrückt werden kann
+        thread = Thread(target=steuerung.pumpen, args=(db, id, bottlesize,))
+        thread.daemon = True
+        thread.start()
 
         return redirect("/ready/%s" %id)
 
@@ -138,17 +102,15 @@ def ready(id):
     if not inited_pumps:
         init_pumps()
 
-    sql = "SELECT * FROM `mischungen&inhalte` WHERE `mischungs.id` = '%s'" %id
-    db.mycursor.execute(sql)
-    inhalte = db.mycursor.fetchall()
+    inhalte = db._get_MischungsInhalte_all(id)
     #0 = Misch.ID, 1 = Inhalts.ID, 2 = Menge
 
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     answer = []
     answer.append("<h1>Es fehlen noch folgene Inhalte:</h1>")
     for inhalt in inhalte:
-        sql = "SELECT `pumpen.id`, `manuell`, `Bezeichnung` FROM `inhalte` WHERE `inhalts.id` = '%s'" %inhalt[1]
-        db.mycursor.execute(sql)
-        result = db.mycursor.fetchall()
+        result = db._get_inhalte(inhalt[1])
+
         if result[0][0] == None or result[0][1] == 1:
             if inhalt[2] == 0:
                 answer.append("<h2>%s: Rest auffüllen</h2>" %result[0][2])
@@ -173,26 +135,21 @@ def new_drink():
             data[3] = 1
         else:
             data[3] = 0
-        #!!!!!!!! Bei Bezeichnung fehlt das n Bezeichnung
-        sql = "INSERT INTO inhalte (`Inhalts.ID`, `Pumpen.ID`, `Bezeichnung`, `Beschreibung`, `Alkohol`, `Manuell`) VALUES (%s, %s, %s, %s, %s, %s)"
+
         val = (None, None, data[0], data[1], data[2], data[3])
-        db.mycursor.execute(sql, val)
-        db.mydb.commit()
+        db._insert_inhalt(val)
+
         return redirect("/")
 
 @app.route('/newmixdrink', methods=['GET', 'POST'])
 def new_mixdrink():
     if request.method == 'GET':
-        sql = "SELECT `Inhalts.ID`, `Bezeichnung` FROM `inhalte`"
-        db.mycursor.execute(sql)
-        result = db.mycursor.fetchall()
+        result = db._get_inhalte_too()
 
         return render_template("newmixdrink.html", liste=result)
 
     if request.method == 'POST':
         data = request.form
-        name = ""
-        beschreibung = ""
 
         for i in data.items():
             if i[0] == 'Mixdrink':
@@ -200,23 +157,18 @@ def new_mixdrink():
             if i[0] == 'Beschreibung':
                 beschreibung = i[1]
 
-        sql = "INSERT INTO mischungen (`Mischungs.ID`, `Bezeichnung`, `Beschreibung`) VALUES (%s, %s, %s)"
         val = (None, name, beschreibung)
-        db.mycursor.execute(sql, val)
-        db.mydb.commit()
+        db._insert_mixdrink(val)
 
-        sql = "SELECT `Mischungs.ID` from `mischungen` where `Bezeichnung` = '%s'" %name
-        db.mycursor.execute(sql)
-        result = db.mycursor.fetchall()
+        result = db._get_mischungsID_by_Name(name)
 
         for i in data.items():
+            #Überspringt den Namen des Mixdrink und die Beschreibung 
             if i[0] == 'Mixdrink' or i[0] == 'Beschreibung':
                 continue
 
-            sql = "INSERT INTO `mischungen&inhalte` (`Mischungs.ID`, `Inhalts.ID`, `Menge`) VALUES (%s, %s, %s)"
             val = (result[0][0], int(i[0]), int(i[1]))
-            db.mycursor.execute(sql, val)
-            db.mydb.commit()
+            db._insert_mischungs_inhalte(val)
 
         return redirect("/")
 
@@ -226,9 +178,7 @@ def cleaning():
         init_pumps()
 
     #Hollt die Pumpennummer sowie die Pinnummer aus der Datenbank
-    sql = "SELECT * FROM `pumpen`"
-    db.mycursor.execute(sql)
-    result = db.mycursor.fetchall()
+    result = db._get_pumpen()
 
     #Checkt ob eine pumpe an ist
     for i in range(0, len(result)):
@@ -260,34 +210,22 @@ def set_bottlesize():
 
 @app.route("/changepump", methods=['GET'])
 def change_pump():
-    sql = "SELECT * FROM `pumpen`"
-    db.mycursor.execute(sql)
-    pumps = db.mycursor.fetchall()
-
-    sql = "SELECT `Inhalts.ID`, `Pumpen.ID`, `Bezeichnung` FROM `inhalte` WHERE `Manuell` = 0 ORDER BY `Pumpen.ID`"
-    db.mycursor.execute(sql)
-    drinks = db.mycursor.fetchall()
+    pumps = db._get_pumpen()
+    drinks = db._get_inhalte_change()
 
     return render_template("pumpchange.html", pumps = pumps, drinks = drinks)
 
 @app.route("/changepump/<int:pump>/<int:drink>", methods=['GET'])
 def change_pump_id(pump, drink):
     # Um doppelte Belegung eines Getränkes zu verhindert
-    sql = "UPDATE `inhalte` SET `Pumpen.ID` = NULL WHERE `Pumpen.ID` = %s"%pump
-    db.mycursor.execute(sql)
-    db.mydb.commit()
+    db._update_pumpID_null(pump)
 
-    sql = "UPDATE `inhalte` SET `Pumpen.ID` = %s WHERE `Inhalts.ID` = %s"%(pump, drink)
-    db.mycursor.execute(sql)
-    db.mydb.commit()
+    db._update_pumpID(pump, drink)
 
     return ""
 
 def init_pumps():
-    #Hollt die Pumpennummer sowie die Pinnummer aus der Datenbank
-    sql = "SELECT * FROM `pumpen`"
-    db.mycursor.execute(sql)
-    result = db.mycursor.fetchall()
+    result = db._get_pumpen()
     #Initalisiert alle Pumpen zum ersten mal
     for i in range(0, len(result)):
         Relais(result[i][1])

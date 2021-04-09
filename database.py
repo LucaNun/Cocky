@@ -19,36 +19,78 @@ class Datenbank():
           user=self.user,
           passwd=self.pw,
           database=self.database_name)
-######!!!!!#####
+
+
+    # Table mischungen
     def _get_mixdrinks(self):
         sql = "SELECT * FROM `mischungen`"
         self.mycursor.execute(sql)
         return self.mycursor.fetchall()
+
     def _get_mixdrink(self, id):
         sql = "SELECT * FROM `mischungen` WHERE `Mischungs.ID` = '%s'"%id
-        db.mycursor.execute(sql)
-        return db.mycursor.fetchall()
-    def _get_drink(self):
-        pass
-#####!!!!!######
+        self.mycursor.execute(sql)
+        return self.mycursor.fetchall()
+
+    def _insert_mixdrink(self,val):
+        sql = "INSERT INTO mischungen (`Mischungs.ID`, `Bezeichnung`, `Beschreibung`) VALUES (%s, %s, %s)"
+        self.mycursor.execute(sql, val)
+        self.mydb.commit()
+
+    def _get_mischungsID_by_Name(self, name):
+        sql = "SELECT `Mischungs.ID` from `mischungen` where `Bezeichnung` = '%s'" %name
+        self.mycursor.execute(sql)
+        return self.mycursor.fetchall()
+
+    # Table mischungen&inhalte
+    def _get_MischungsInhalte_all(self, mischungsID):
+        sql = "SELECT * FROM `mischungen&inhalte` WHERE `mischungs.id` = '%s'" %id
+        self.mycursor.execute(sql)
+        return self.mycursor.fetchall()
+
     def _get_MischungsInhalte(self, mischungsID):
-        sql = "SELECT `Inhalts.ID`, `Menge` FROM `mischungen&inhalte` WHERE `Mischungs.ID` LIKE %s" %mischungsID
+        sql = "SELECT `Inhalts.ID`, `Menge` FROM `mischungen&inhalte` WHERE `Mischungs.ID` LIKE %s"%mischungsID
         self.mycursor.execute(sql)
         return self.mycursor.fetchall()
 
-    def get_Test(self,name):
-        sql = "SELECT `Inhalts.ID`, `Menge` FROM `mischungen&inhalte` WHERE `Mischungs.ID` LIKE (SELECT `Mischungs.ID` FROM `mischungen` WHERE `Bezeichung` LIKE '%s')"%name
+    def _insert_mischungs_inhalte(self, val):
+        sql = "INSERT INTO `mischungen&inhalte` (`Mischungs.ID`, `Inhalts.ID`, `Menge`) VALUES (%s, %s, %s)"
+        self.mycursor.execute(sql, val)
+        self.mydb.commit()
+
+    # Table inhalte
+    def _get_inhalte(self, inhaltsID):
+        sql = "SELECT `pumpen.id`, `manuell`, `Bezeichnung`, `Beschreibung` FROM `inhalte` WHERE `inhalts.id` = '%s'"%inhaltsID
         self.mycursor.execute(sql)
         return self.mycursor.fetchall()
 
-    def _get_Inhalt_Pumpe(self, id):
-        sql = 'SELECT `Pumpen.ID` FROM `inhalte` WHERE `Inhalts.ID` LIKE %s' %id
+    def _get_inhalte_too(self):
+        sql = "SELECT `Inhalts.ID`, `Bezeichnung` FROM `inhalte`"
         self.mycursor.execute(sql)
-        pumpe = self.mycursor.fetchall()[0][0]
-        return pumpe
+        return self.mycursor.fetchall()
 
-    def _get_Pumpen_Pin(self, id):
-        print("ID: " + str(id))
-        sql = 'SELECT `PIN` FROM `pumpen` WHERE `Pumpen.ID` LIKE %s' %id
+    def _get_inhalte_change(self):
+        sql = "SELECT `Inhalts.ID`, `Pumpen.ID`, `Bezeichnung` FROM `inhalte` WHERE `Manuell` = 0 ORDER BY `Pumpen.ID`"
         self.mycursor.execute(sql)
-        return self.mycursor.fetchall()[0][0]
+        return self.mycursor.fetchall()
+
+    def _insert_inhalt(self, val):
+        sql = "INSERT INTO inhalte (`Inhalts.ID`, `Pumpen.ID`, `Bezeichnung`, `Beschreibung`, `Alkohol`, `Manuell`) VALUES (%s, %s, %s, %s, %s, %s)"
+        self.mycursor.execute(sql, val)
+        self.mydb.commit()
+
+    # Table pumpe
+    def _get_pumpen(self):
+        sql = "SELECT * FROM `pumpen`"
+        self.mycursor.execute(sql)
+        return self.mycursor.fetchall()
+
+    def _update_pumpID_null(self, pump):
+        sql = "UPDATE `inhalte` SET `Pumpen.ID` = NULL WHERE `Pumpen.ID` = %s"%pump
+        self.mycursor.execute(sql)
+        self.mydb.commit()
+
+    def _update_pumpID(self, pump, drink):
+        sql = "UPDATE `inhalte` SET `Pumpen.ID` = %s WHERE `Inhalts.ID` = %s"%(pump, drink)
+        self.mycursor.execute(sql)
+        self.mydb.commit()
