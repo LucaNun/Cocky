@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://kit.fontawesome.com/f723190f09.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" type="text/css" href="/static/css/index.css">
-  <title>DEMO</title>
+  <title>Neues Mischgetränk</title>
 </head>
-
 <body>
-
   <div class="container mt-4">
     <form action="/newmixdrink" method="POST">
         <div class="dropdown">
@@ -32,22 +29,16 @@
                 <label for="Beschreibung" class="form-label">Beschreibung:</label>
                 <textarea class="form-control" name="Beschreibung" rows="3" placeholder="Hier eine kurze Beschreibung des Getränkes" required></textarea>
             </div>
-
         </div>
-
         <div class="mt-4">
             <button class="btn btn-primary" type="submit">Abschicken!</button>
         </div>
     </form>
-
     <a href="/" class="btn btn-primary mt-4">Zurück..</a>
   </div>
-
-
   <script type="text/javascript" src="/static/lib/jquery/jquery-3.5.1.min.js"></script>
   <script type="text/javascript" src="/static/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script type="text/javascript" src="/static/js/index.js"></script>
-
   <script>
       $(".dropdown-item").click(function(){
       var name= this.value;
@@ -55,8 +46,6 @@
       console.log(value, name);
       $("#drinklist").append('<div class="mb-3"><label for="'+ value +'" class="form-label">'+ name +'</label><input class="form-control" type="number" min="0" max="100" placeholder="Hier die Menge in %" aria-label="name" name="'+ value +'" required></div>');
       });
-
   </script>
 </body>
-
 </html>

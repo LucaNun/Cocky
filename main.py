@@ -5,15 +5,7 @@ from flask import Flask, request, redirect, url_for, render_template
 from threading import Thread
 
 
-
-
-#!!!!!!!!!!!!
-#-Display
-#--Aktueller Zustand
-#!!!!!!!!!!!!
-
 db = database.Datenbank(host="localhost", user="root", pw="root", database_name="cocktail")
-#db = database.Datenbank(host="localhost", user="root", pw="", database_name="cocktail")
 
 app = Flask(__name__)
 
@@ -62,6 +54,7 @@ def get_drink(id):
         result = db._get_inhalte(belegung[i][0])
         if result[0][0] == None and result[0][1] == 0:
             inhalte.append((result[0][2], result[0][3], True))
+
         else:
             inhalte.append((result[0][2], result[0][3], False))
 
@@ -102,7 +95,6 @@ def ready(id):
     inhalte = db._get_MischungsInhalte_all(id)
     #0 = Misch.ID, 1 = Inhalts.ID, 2 = Menge
 
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     answer = []
     answer.append("<h1>Es fehlen noch folgene Inhalte:</h1>")
     for inhalt in inhalte:
@@ -234,5 +226,4 @@ def init_pumps():
     inited_pumps = True
 
 if __name__ == "__main__":
-    app.run('192.168.178.48', '3334', debug=True)
-    #app.run('192.168.178.65', '3334', debug=True)
+    app.run('localhost', '3334')

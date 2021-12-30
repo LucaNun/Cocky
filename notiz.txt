@@ -1,0 +1,8 @@
+-Startseite sollte gleich die Mischgetränke sein
+-Da Einstellungen wo die restlichen Seiten aufgerufen werden
+-Anzeige der Mischgetränke mit Inhalt und Auswahl gleich zu mixen
+-Liste wo ich anwählen kann ob dieses Mischgetränk angezeigt werden soll
+-scrollen sollte auch mit dicken fingern funktionieren
+-vernünftige Button
+-vorhandene Daten anzeigen
+-
