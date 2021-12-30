@@ -21,6 +21,22 @@ class Datenbank():
           database=self.database_name)
 
 
+    def _get_drink(self, id):
+        """
+        Mit der id die ganzen inhalts id's abfragen "SELECT `Inhalts.ID` FROM `mischungen&inhalte` WHERE `Mischungs.ID` = '%s'"%id
+        Mit der inhalts id die Einzelnen getränke abfragen "SELECT * FROM `inhalte` WHERE `Inhalts.ID` = (SELECT `Inhalts.ID` FROM `mischungen&inhalte` WHERE `Mischungs.ID` = 2)"
+        Zum Schluss abfragen ob der Inhalt an einer Pumpe anliegt
+        """
+        sql = "SELECT `Inhalts.ID` FROM `mischungen&inhalte` WHERE `Mischungs.ID` = '%s'"%id
+        self.mycursor.execute(sql)
+        result = self.mycursor.fetchall()
+        answer = []
+        for i in result:
+            sql = "SELECT * FROM `inhalte` WHERE `Inhalts.ID` = '%s'"%i
+            self.mycursor.execute(sql)
+            answer.append(self.mycursor.fetchall()[0])
+        return answer
+
     # Table mischungen
     def _get_mixdrinks(self):
         sql = "SELECT * FROM `mischungen`"

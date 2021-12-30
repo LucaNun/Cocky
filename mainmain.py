@@ -14,10 +14,6 @@ inited_pumps = True#!False
 bottlesize = 250
 current_drink = []
 
-@app.route("/current", methods=['GET'])
-def current():
-    return str(values.current_drink)
-
 @app.route("/", methods=['GET'])
 def main():
     #Wenn die Pumpen noch nicht Initalisiert sind führe init_pumps() aus
@@ -33,16 +29,48 @@ def get_drinks():
         init_pumps()
 
     result = db._get_mixdrinks()
-    r = []
-    for drink in result:
-        drink = list(drink)
+
+    return render_template("getdrinks.html", result=result, len=len(result))
+
+@app.route("/getdrink/<id>", methods=['GET', 'POST'])
+def get_drink(id):
+    if not inited_pumps:
+        init_pumps()
+
+    if request.method == 'GET':
+        answer = []
+        achtung = False
+        mische = db._get_mixdrink(id)
+        answer.append("Name: " + str(mische[0][1]) + "<br>Beschreibung:" + str(mische[0][2]) +"<br>")
+
+        belegung = db._get_MischungsInhalte(mische[0][0])
+        #0 = Misch.ID, 1 = Inhalts.ID, 2 = Menge
+        #Checke hier ob alle inhalte verfügbar sind wenn
+        #nicht dann wird es kenntlich gemacht auf der seite
         inhalte = []
-        zutaten = db._get_drink(drink[0])
-        for zutat in zutaten:
-            inhalte.append(list(zutat))
-        r.append(drink + [inhalte])
-    print(r)
-    return render_template("getdrinks.html", result=r, len=len(r))
+        for i in range(0,len(belegung)):
+            result = db._get_inhalte(belegung[i][0])
+            if result[0][0] == None and result[0][1] == 0:
+                inhalte.append((result[0][2], result[0][3], True))
+            else:
+                inhalte.append((result[0][2], result[0][3], False))
+
+        achtung = False
+        for i in range(0, len(inhalte)):
+            #Checkt ob ein Getränk fehlt, falls ja färbt er diesen Rot
+            if inhalte[i][2]:
+                achtung = True
+                answer.append("<br><div style='color:red;'><h1>%s</><h2>%s</h2></div>"%(inhalte[i][0],inhalte[i][1]))
+            else:
+                answer.append("<br><div style='color:green;'><h1>%s</><h2>%s</h2></div>"%(inhalte[i][0],inhalte[i][1]))
+
+        #Wenn ein Getränk fehlt ändert sich der Bestätigungstext
+        if achtung:
+            answer.append("<br><a href='/makedrink/%s'>Wollen sie wirklich mischen?</a>"%mische[0][0])
+        else:
+            answer.append("<br><a href='/makedrink/%s'>Jetzt mischen!</a>"%mische[0][0])
+        answer.append("<br><a href='/getdrinks'>Zurueck</a>")
+        return "".join(answer)
 
 @app.route("/makedrink/<id>", methods=['GET', 'POST'])
 def make_drink(id):

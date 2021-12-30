@@ -1,5 +1,5 @@
 import asyncio
-from hx711py import waegezelle
+from hx711 import waegezelle
 
 def pumpen(db, id, bottlesize):
     sql = "SELECT * FROM `mischungen&inhalte` WHERE `Mischungs.ID` = %s" %id

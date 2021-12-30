@@ -3,7 +3,7 @@ def waegezelle(pin, menge, bezeichnung):
     import time
     import sys
     import relais
-    import RPi.GPIO as GPIO
+    #import RPi.GPIO as GPIO
     from hx711py.hx711 import HX711
 
     referenceUnit = 384.76331#390.1
