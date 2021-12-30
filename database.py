@@ -1,5 +1,7 @@
 import mysql.connector
 
+#! Hier muss nochmal durch geguckt werden und KOMMENTIERT werden!!
+
 class Datenbank():
 
     def __init__(self, host, user, pw, database_name):
@@ -42,8 +44,8 @@ class Datenbank():
 
     # Table mischungen&inhalte
     def _get_MischungsInhalte_all(self, mischungsID):
-        self.mycursor.execute(sql)
         sql = "SELECT * FROM `mischungen&inhalte` WHERE `mischungs.id` = '%s'" %id
+        self.mycursor.execute(sql)
         return self.mycursor.fetchall()
 
     def _get_MischungsInhalte(self, mischungsID):
@@ -92,3 +94,5 @@ class Datenbank():
         sql = "UPDATE `inhalte` SET `Pumpen.ID` = %s WHERE `Inhalts.ID` = %s"%(pump, drink)
         self.mycursor.execute(sql)
         self.mydb.commit()
+
+#

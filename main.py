@@ -6,6 +6,7 @@ from threading import Thread
 
 
 db = database.Datenbank(host="localhost", user="root", pw="root", database_name="cocktail")
+#db = database.Datenbank(host="localhost", user="root", pw="", database_name="cocktail")
 
 app = Flask(__name__)
 
@@ -26,7 +27,7 @@ def main():
     #Rendert ein HTML Template
     return render_template("main.html")
 
-@app.route("/getdrinks", methods=['GET'])
+@app.route("/getdrinks", methods=['GET', 'POST'])
 def get_drinks():
     if not inited_pumps:
         init_pumps()
@@ -35,59 +36,61 @@ def get_drinks():
 
     return render_template("getdrinks.html", result=result, len=len(result))
 
-@app.route("/getdrink/<id>", methods=['GET'])
+@app.route("/getdrink/<id>", methods=['GET', 'POST'])
 def get_drink(id):
     if not inited_pumps:
         init_pumps()
 
-    answer = []
-    achtung = False
-    mische = db._get_mixdrink(id)
-    answer.append("Name: " + str(mische[0][1]) + "<br>Beschreibung:" + str(mische[0][2]) +"<br>")
+    if request.method == 'GET':
+        answer = []
+        achtung = False
+        mische = db._get_mixdrink(id)
+        answer.append("Name: " + str(mische[0][1]) + "<br>Beschreibung:" + str(mische[0][2]) +"<br>")
 
-    belegung = db._get_MischungsInhalte(mische[0][0])
-    #0 = Misch.ID, 1 = Inhalts.ID, 2 = Menge
-    #Checke hier ob alle inhalte verfügbar sind wenn
-    #nicht dann wird es kenntlich gemacht auf der seite
-    inhalte = []
-    for i in range(0,len(belegung)):
-        result = db._get_inhalte(belegung[i][0])
-        if result[0][0] == None and result[0][1] == 0:
-            inhalte.append((result[0][2], result[0][3], True))
+        belegung = db._get_MischungsInhalte(mische[0][0])
+        #0 = Misch.ID, 1 = Inhalts.ID, 2 = Menge
+        #Checke hier ob alle inhalte verfügbar sind wenn
+        #nicht dann wird es kenntlich gemacht auf der seite
+        inhalte = []
+        for i in range(0,len(belegung)):
+            result = db._get_inhalte(belegung[i][0])
+            if result[0][0] == None and result[0][1] == 0:
+                inhalte.append((result[0][2], result[0][3], True))
+            else:
+                inhalte.append((result[0][2], result[0][3], False))
 
+        achtung = False
+        for i in range(0, len(inhalte)):
+            #Checkt ob ein Getränk fehlt, falls ja färbt er diesen Rot
+            if inhalte[i][2]:
+                achtung = True
+                answer.append("<br><div style='color:red;'><h1>%s</><h2>%s</h2></div>"%(inhalte[i][0],inhalte[i][1]))
+            else:
+                answer.append("<br><div style='color:green;'><h1>%s</><h2>%s</h2></div>"%(inhalte[i][0],inhalte[i][1]))
+
+        #Wenn ein Getränk fehlt ändert sich der Bestätigungstext
+        if achtung:
+            answer.append("<br><a href='/makedrink/%s'>Wollen sie wirklich mischen?</a>"%mische[0][0])
         else:
-            inhalte.append((result[0][2], result[0][3], False))
+            answer.append("<br><a href='/makedrink/%s'>Jetzt mischen!</a>"%mische[0][0])
+        answer.append("<br><a href='/getdrinks'>Zurueck</a>")
+        return "".join(answer)
 
-    achtung = False
-    for i in range(0, len(inhalte)):
-        #Checkt ob ein Getränk fehlt, falls ja färbt er diesen Rot
-        if inhalte[i][2]:
-            achtung = True
-            answer.append("<br><div style='color:red;'><h1>%s</><h2>%s</h2></div>"%(inhalte[i][0],inhalte[i][1]))
-        else:
-            answer.append("<br><div style='color:green;'><h1>%s</><h2>%s</h2></div>"%(inhalte[i][0],inhalte[i][1]))
-
-    #Wenn ein Getränk fehlt ändert sich der Bestätigungstext
-    if achtung:
-        answer.append("<br><a href='/makedrink/%s'>Wollen sie wirklich mischen?</a>"%mische[0][0])
-    else:
-        answer.append("<br><a href='/makedrink/%s'>Jetzt mischen!</a>"%mische[0][0])
-    return "".join(answer)
-
-@app.route("/makedrink/<id>", methods=['GET'])
+@app.route("/makedrink/<id>", methods=['GET', 'POST'])
 def make_drink(id):
     if not inited_pumps:
         init_pumps()
 
-    global bottlesize
-    #Startet es Asyncron als Thread damit nicht mehrmals auf Mischen gedrückt werden kann
-    thread = Thread(target=steuerung.pumpen, args=(db, id, bottlesize,))
-    thread.daemon = True
-    thread.start()
+    if request.method == 'GET':
+        global bottlesize
+        #Startet es Asyncron als Thread damit nicht mehrmals auf Mischen gedrückt werden kann
+        thread = Thread(target=steuerung.pumpen, args=(db, id, bottlesize,))
+        thread.daemon = True
+        thread.start()
 
-    return redirect("/ready/%s" %id)
+        return redirect("/ready/%s" %id)
 
-@app.route("/ready/<id>", methods=['GET'])
+@app.route("/ready/<id>", methods=['GET', 'POST'])
 def ready(id):
     if not inited_pumps:
         init_pumps()
@@ -95,6 +98,7 @@ def ready(id):
     inhalte = db._get_MischungsInhalte_all(id)
     #0 = Misch.ID, 1 = Inhalts.ID, 2 = Menge
 
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     answer = []
     answer.append("<h1>Es fehlen noch folgene Inhalte:</h1>")
     for inhalt in inhalte:
@@ -139,6 +143,8 @@ def new_mixdrink():
 
     if request.method == 'POST':
         data = request.form
+        #name = ""
+        #beschreibung = ""
 
         for i in data.items():
             if i[0] == 'Mixdrink':
@@ -152,7 +158,6 @@ def new_mixdrink():
         result = db._get_mischungsID_by_Name(name)
 
         for i in data.items():
-            #Überspringt den Namen des Mixdrink und die Beschreibung
             if i[0] == 'Mixdrink' or i[0] == 'Beschreibung':
                 continue
 
@@ -199,9 +204,6 @@ def set_bottlesize():
 
 @app.route("/changepump", methods=['GET'])
 def change_pump():
-    if not inited_pumps:
-        init_pumps()
-
     pumps = db._get_pumpen()
     drinks = db._get_inhalte_change()
 
@@ -209,7 +211,7 @@ def change_pump():
 
 @app.route("/changepump/<int:pump>/<int:drink>", methods=['GET'])
 def change_pump_id(pump, drink):
-    # Um doppelte Belegung eines Getränkes zu verhindern
+    # Um doppelte Belegung eines Getränkes zu verhindert
     db._update_pumpID_null(pump)
 
     db._update_pumpID(pump, drink)
@@ -221,9 +223,11 @@ def init_pumps():
     #Initalisiert alle Pumpen zum ersten mal
     for i in range(0, len(result)):
         Relais(result[i][1])
-    #Setzt die Globale Variable inited_pumps auf True
+    #Holt sich die Globale Variable inited_pumps und setzt diese auf True
     global inited_pumps
     inited_pumps = True
 
 if __name__ == "__main__":
-    app.run('localhost', '3334')
+    app.run('localhost', '3334', debug=True)
+    #app.run('172.16.1.127', '3334', debug=True)
+    #app.run('192.168.178.65', '3334', debug=True)
