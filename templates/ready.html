@@ -11,9 +11,22 @@
 
 <body>
 <div class="container mt-4">
-  <h1>Diese Zutaten müssen noch hinzugefügt werden:</h1>
-    {%for %}
- 
+  {% if rb or mb %}
+    <h1>Diese Zutaten müssen noch hinzugefügt werden:</h1>
+    {% if mb%}
+      {% for inhalt in m %}
+        <p>{{inhalt[0]}}: {{inhalt[1]}}</p>
+      {% endfor %}
+    {% endif %}
+    {% if rb%}
+      {% for inhalt in r %}
+        <p>{{inhalt}} bis zum Rest auffüllen</p>
+      {% endfor %}
+    {% endif %}
+  {% else %}
+    <h1>Ihr Getränk wird zubereitet</h1>
+  {% endif %}
+
   <a href="/" class="btn btn-primary mt-4">Zurück..</a>
 </div>
 

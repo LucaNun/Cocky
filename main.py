@@ -65,20 +65,25 @@ def ready(id):
 
     inhalte = db._get_MischungsInhalte_all(id)
     #0 = Misch.ID, 1 = Inhalts.ID, 2 = Menge
+    print(inhalte)
 
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    answer = []
-    answer.append("<h1>Es fehlen noch folgene Inhalte:</h1>")
+    rest = []
+    manuell = []
     for inhalt in inhalte:
         result = db._get_inhalte(inhalt[1])
-
         if result[0][0] == None or result[0][1] == 1:
             if inhalt[2] == 0:
-                answer.append("<h2>%s: Rest auffüllen</h2>" %result[0][2])
+                rest.append(result[0][2])
             else:
-                answer.append("<h2>%s: %s</h2>" %(result[0][2], inhalt[2]))
-    answer.append('<a href="/" class="btn btn-primary mt-4">Zurück..</a>')
-    return "".join(answer)
+                manuell.append([result[0][2], inhalt[2]])
+
+    rb = False
+    mb = False
+    if rest:
+        rb = True
+    if manuell:
+        mb=True
+    return render_template("ready.html", r=rest, m=manuell, rb=rb, mb=mb)
 
 @app.route("/newdrink", methods=['GET', 'POST'])
 def new_drink():
