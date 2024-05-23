@@ -1,14 +1,14 @@
 from flask import Flask
 
 from config import Config
+from app.extensions import mysql
 
 def create_app(config=Config):
     app = Flask(__name__)
     app.config.from_object(config)
     
     # Extentions
-    from . import db
-    db.init_app(app)
+    mysql.init_app(app)
     
     # Blueprints
     from app.main import bp as main_bp
