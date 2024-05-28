@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Change Pump{% endblock title %}
+
+{% block body %}
+<body>
+<div class="container mt-4">
+  <h1>Ein neues Getränk zuweisen!</h1>
+  {%for pump in pumps%}
+    <div class="row">
+      <div class="col"><h4>Pumpe {{pump['pumpID']}}:
+        {%set ns = namespace()%}
+        {%set ns.checked = False%}
+        <select class="changePump" id="ingredientsID" name="ingredientsID" hx-post="/changepump" hx-include="next [name='pumpID']" hx-swap="none">       
+            {%for drink in drinks%}
+              {%if pump['pumpID'] == drink['pumpID']%}
+                <option value="{{drink['ingredientsID']}}" selected>{{drink['name']}}</option>
+                {%set ns.checked = True%}  
+              {%else%}
+                <option value="{{drink['ingredientsID']}}">{{drink['name']}}</option>
+              {%endif%}          
+            {%endfor%}
+            {%if not ns.checked%}
+              <option selected>Wählen Sie etwas...</option>
+            {%else%}
+              <option class="bg-danger">Entfernen</option>
+            {%endif%}
+          </select>
+          <input type="number" name="pumpID" value="{{pump['pumpID']}}" hidden>
+        </h4>
+      </div>
+    </div>
+  {%endfor%}
+  <a href="/" class="btn btn-primary mt-4">Zurück..</a>
+</div>
+
+{% endblock body %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='js/changePump.js') }}"></script>
+{% endblock script %}
