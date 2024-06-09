@@ -8,6 +8,8 @@ class Config:
     MYSQL_DB = secret.DATABASE_NAME
     MYSQL_CURSORCLASS = "DictCursor"
 
+    BOTTLE_SIZE = 250
+
     TESTING = True
     
     SECRET_KEY = os.urandom(16)

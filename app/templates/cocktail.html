@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Main{% endblock title %}
+
+
+{% block body %}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="https://via.placeholder.com/500" class="img-fluid" alt="Margarita Bild">
+        </div>
+        <div class="col-md-6">
+            <h1>{{mixture.name}}</h1>
+            <p>{{mixture.description}}</p>
+            <h3>Zutaten:</h3>
+
+            <ul>
+            {% for ingredient in ingredients %}
+                <li class="
+                {% if not ingredient.manual and not ingredient.pumpID %}
+                    text-danger
+                {% elif ingredient.manual %}
+                    text-warning
+                {% endif %}
+                ">
+                {% if ingredient.manual %}
+                    {{ingredient["amount"]}}stk {{ingredient.name}}
+                {% else %}
+                    {{(bottlesize / 100 * ingredient["amount"] | int) |int}}ml {{ingredient.name}}
+                {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+            <a href="/make/{{mixture.mixturesID}}" class="btn btn-outline-success">Press Me</a>
+
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock body %}
+
+
+{% block script %}
+{% endblock script %}
