@@ -419,3 +419,6 @@ class HX711:
     def reset(self):
         self.power_down()
         self.power_up()
+
+    def cleanup(self):
+        GPIO.cleanup([self.PD_SCK, self.DOUT])

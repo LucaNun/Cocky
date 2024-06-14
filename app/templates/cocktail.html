@@ -32,8 +32,14 @@
                 </li>
             {% endfor %}
             </ul>
-            <a href="/make/{{mixture.mixturesID}}" class="btn btn-outline-success">Press Me</a>
-
+            <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" hidden>
+                <div class="progress-bar" style="width: 0%" id="currentProgress"></div>
+            </div>
+            <div class="progress mt-1" role="progressbar" aria-label="Basic example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" hidden>
+                <div class="progress-bar" style="width: 0%" id="allCurrentProgress"></div>
+            </div>
+            <button id="start" class="btn btn-outline-success mt-1" hx-get="/make/{{mixture.mixturesID}}" hx-swap="None">Make the Drink</button>
+            <button id="back" class="btn btn-outline-warning mt-1">Back</button>
         </div>
     </div>
 </div>
@@ -44,4 +50,50 @@
 
 
 {% block script %}
+<script>
+$('#start').click(function(){
+    $('.progress').removeAttr('hidden');
+});
+$('#back').click(function(){
+    window.history.back();
+});
+
+$('#start').click(function() {
+    $('#start').prop('disabled', true);
+    var currentDrinkForm = $('#currentDrink');
+    var currentProgressForm = $('#currentProgress');
+    var allCurrentProgressForm = $('#allCurrentProgress');
+    var allProgressForm = $('#allProgress');
+    var eventSource = new EventSource("/progress");
+
+    eventSource.onmessage = function(event) {
+        console.log(event);
+        var data = JSON.parse(event.data);
+
+        var currentDrink = data.currentDrink;
+        var currentProgress = data.currentProgress;
+        var allCurrentProgress = data.allCurrentProgress;
+        var allProgress = data.allProgress;
+        var status = data.status;
+
+        currentDrinkForm.text(currentDrink);
+        currentProgressForm.css('width', currentProgress + '%');
+        currentProgressForm.text(currentDrink);
+
+        allCurrentProgressForm.css('width', allCurrentProgress + '%');
+        allCurrentProgressForm.text(allCurrentProgress + '%');
+
+        allProgressForm.css('width', allProgress + '%');
+        allProgressForm.text(allProgress + '%');
+
+        if (status == 1) {
+            eventSource.close();
+            $('#start').prop('disabled', false);
+            $('#start').text("Noch einen?")
+        }
+    };
+});
+
+
+</script>
 {% endblock script %}
