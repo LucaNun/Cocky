@@ -16,7 +16,6 @@ def index():
     con = mysql.connection.cursor()
     con.execute("SELECT * FROM mixtures")
     cocktails = con.fetchall()
-    print(cocktails)
     con.close()
     return render_template('allCocktails.html', cocktails=cocktails)
 
