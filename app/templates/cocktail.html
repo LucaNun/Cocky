@@ -85,7 +85,6 @@ function startDrink() {
     var eventSource = new EventSource("/progress");
 
     eventSource.onmessage = function(event) {
-        console.log(event);
         var data = JSON.parse(event.data);
 
         var currentDrink = data.currentDrink;

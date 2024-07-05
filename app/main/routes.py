@@ -4,6 +4,7 @@ from flask import render_template, request, redirect, url_for, current_app, Resp
 from app.extensions import mysql
 from threading import Thread
 import json, time
+import RPi.GPIO as GPIO
 
 currentDrink = ""
 currentProgress = 0
@@ -122,4 +123,42 @@ def get_progress():
         while allProgress <= 100:
             yield f"data:{json.dumps({'allCurrentProgress': allCurrentProgress, 'currentProgress': currentProgress, 'currentDrink': currentDrink, 'status': status})}\n\n"
             time.sleep(0.5)
+    return Response(generate(), mimetype='text/event-stream')
+
+
+@bp.route("/clean", methods=['GET', 'POST'])
+def clean_pump():
+    con = mysql.connection.cursor()
+
+    if request.method == 'POST':
+        pin = int(request.form.get("pump"))
+        if GPIO.input(pin):
+            GPIO.output(pin, GPIO.LOW)
+        else:
+            GPIO.output(pin, GPIO.HIGH)
+        return ""
+    
+    con.execute("SELECT * FROM pumps")
+    pumps = con.fetchall()
+    con.close()
+    return render_template("cleaning.html", pumps = pumps)
+
+@bp.route('/cleaning-progress')
+def get_cleaning_progress():
+    con = mysql.connection.cursor()
+    con.execute("SELECT * FROM pumps")
+    pumps = con.fetchall()
+    def generate():
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
+        for pump in pumps:
+                GPIO.setup(pump["pin"], GPIO.OUT)
+                GPIO.output(pump["pin"], GPIO.HIGH)
+        while True:
+            pumplist = {}
+            for pump in pumps:
+                stat = GPIO.input(pump["pin"])
+                pumplist[pump["pumpID"]] = stat
+            time.sleep(0.5)
+            yield f"data:{json.dumps(pumplist)}\n\n"
     return Response(generate(), mimetype='text/event-stream')

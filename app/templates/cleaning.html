@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Cleaning{% endblock title %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4">Cleaning</h1>
+    <div class="row">
+        <div class="col-6">
+            {% for pump in pumps %}
+                <h3>Pumpe {{pump["pumpID"]}}: <button class="btn btn-outline-success" id="{{pump["pumpID"]}}" name="pump" value="{{pump["pin"]}}" hx-post="/clean" hx-swap="none">Einschalten</button></h3>
+                {% if pump["pumpID"] == 5 %}
+                    </div>
+                    <div class="col-6">
+                {% endif %}
+
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock body %}
+
+{% block script %}
+<script>
+function status() {
+    var eventSource = new EventSource("/cleaning-progress");
+    eventSource.onmessage = function(event) {
+        var data = JSON.parse(event.data);
+        console.log(data);
+
+        for (var key in data){
+            if (!data[key]){
+                $(`#${key}`).text('Ausschalten');
+                $(`#${key}`).removeClass('btn-outline-success').addClass('btn-outline-danger');
+            }
+            else{
+                $(`#${key}`).text('Einschalten');
+                $(`#${key}`).removeClass('btn-outline-danger').addClass('btn-outline-success');
+            }
+            console.log(data[key])          
+        };
+    };
+    
+}
+$( document ).ready( status );
+</script>
+{% endblock script %}
